@@ -1,18 +1,14 @@
-from functions.get_files_info import get_files_info
+from functions.run_python_file import run_python_file
 
 def test():
-    print('Result for current directory:')
-    print(get_files_info("calculator", "."))
+    print(run_python_file("calculator", "main.py"))
+    print(run_python_file("calculator", "main.py", ["3 + 5"]))
+    print(run_python_file("calculator", "tests.py"))
+    print(run_python_file("calculator", "../main.py"))
+    print(run_python_file("calculator", "nonexistent.py"))
+    
+    
 
-    print('Result for pkg directory:')
-    print(get_files_info("calculator", "pkg"))
-
-    print('Result for /bin directory:')
-    print(get_files_info("calculator", "/bin"))
-    print()
-
-    print('Result for ../ directory:')
-    print(get_files_info("calculator", "../"))
-
+    
 
 test()
