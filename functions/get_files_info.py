@@ -1,5 +1,11 @@
 import os
+from google import genai
+from dotenv import load_dotenv
+from google.genai import types
+
+
 def get_files_info(working_directory, directory="."):
+    
     '''The directory parameter should be treated as a relative path within the working_directory. 
     Use os.path.join(working_directory, directory) to create the full path, 
     then validate it stays within the working directory boundaries.'''
