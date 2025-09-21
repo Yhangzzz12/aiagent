@@ -42,29 +42,46 @@ Be sure to explain how did you finish the process after each call
     client = genai.Client(api_key=api_key)
     
     #Generate Contents
-    response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
-    contents=messages,
-    config=types.GenerateContentConfig(tools = [available_functions],system_instruction=system_prompt),
-    
-)
-    print()
-    if response.function_calls:
-        for fc in response.function_calls: 
-               # fc is a genai.types.FunctionCall
-            call_result = call_function(fc, verbose=True)
-            if not call_result:
-                raise Exception('An Error')
+    for i in range(20):
+        try:
+            response = client.models.generate_content(
+            model='gemini-2.0-flash-001',
+            contents=messages,
+            config=types.GenerateContentConfig(tools = [available_functions],system_instruction=system_prompt),   
+        )
+
+            # (role: "model")
+            for resp in response.candidates:
+                messages.append(resp.content)
+
+
+            print()
+            if response.function_calls:
+                function_calls=[]
+                for fc in response.function_calls: 
+                    # fc is a genai.types.FunctionCall
+                    call_result = call_function(fc, verbose=True)
+                    function_calls.append(call_result.parts[0])
+
+                    if not call_result:
+                        raise Exception('An Error')
+                    else:
+                        print(f"-> {call_result.parts[0].function_response.response}")
+
+                messages.append(types.Content(role="user", parts=function_calls))
+
+            
             else:
-                print(f"-> {call_result.parts[0].function_response.response}")
+                print(response.text)
+                break
 
-    
-    else:
-        print(response.text)
+            if verbose:
+                print(f'Prompt tokens: {response.usage_metadata.prompt_token_count}\nResponse tokens: {response.usage_metadata.candidates_token_count}')
 
-    if verbose:
-        print(f'Prompt tokens: {response.usage_metadata.prompt_token_count}\nResponse tokens: {response.usage_metadata.candidates_token_count}')
-    
+
+        except Exception as e:
+            print(f'{e}')
+            
 
 
 if __name__ == "__main__":
