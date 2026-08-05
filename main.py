@@ -55,6 +55,8 @@ Be sure to explain how did you finish the process after each call
                 messages.append(resp.content)
 
 
+
+
             print()
             if response.function_calls:
                 function_calls=[]

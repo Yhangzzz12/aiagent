@@ -5,6 +5,7 @@ from functions.get_file_content import *
 from functions.get_files_info import *
 from functions.run_python_file import *
 from functions.write_file import *
+from functions.search_web import *
 import os
 
 schema_get_files_info = types.FunctionDeclaration(
@@ -17,34 +18,46 @@ schema_get_files_info = types.FunctionDeclaration(
                 type=types.Type.STRING,
                 description="The directory to list files from, relative to the working directory. If not provided, lists files in the working directory itself.",
             ),
+            "working_directory": types.Schema(
+                type = types.Type.STRING,
+                description = "./calculator"
+            )
         },
     ),
 )
 
 schema_get_file_content = types.FunctionDeclaration(
     name="get_file_content",
-    description="read the contents of a specified file",
+    description="read the contents of a or more specified files",
     parameters=types.Schema(
         type=types.Type.OBJECT,
         properties={
             "file_path": types.Schema(
                 type=types.Type.STRING,
-                description="The specific file name, relative to the working directory. If not provided, lists files in the working directory itself.",
+                description='File name relative to the current working directory. You can give either the full name with extension (e.g. calculator.py) or just the base name (e.g. calculator); if the extension is omitted, the function will search for a matching file with any extension in the working directory.'
             ),
+            "working_directory": types.Schema(
+                type = types.Type.STRING,
+                description = "./calculator"
+            )
         },
     ),
 )
 
 schema_run_python_file = types.FunctionDeclaration(
     name="run_python_file",
-    description="run the specific python file provided by the prompt",
+    description="run python files provided by the prompt",
     parameters=types.Schema(
         type=types.Type.OBJECT,
         properties={
             "file_path": types.Schema(
                 type=types.Type.STRING,
-                description="The specific file name, relative to the working directory. ",
+                description="The specific file names, relative to the working directory. ",
             ),
+            "working_directory": types.Schema(
+                type = types.Type.STRING,
+                description = "./calculator"
+            )
         },
     ),
 )
@@ -57,7 +70,7 @@ schema_write_file = types.FunctionDeclaration(
         properties={
             "file_path": types.Schema(
                 type=types.Type.STRING,
-                description="The specific file name, relative to the working directory. ",
+                description="The file names, relative to the working directory. ",
 
             ),
             'content':types.Schema(
@@ -65,7 +78,29 @@ schema_write_file = types.FunctionDeclaration(
                 description="The specific content that the users want to write, usually enclosed by '' quoation ",
 
             ),
+            "working_directory": types.Schema(
+                type = types.Type.STRING,
+                description = "./calculator"
+            )
 
+        },
+    ),
+)
+
+schema_search_web = types.FunctionDeclaration(
+    name='web_search',
+    description = 'Searches the web for current information.',
+    parameters = types.Schema(
+        type= types.Type.OBJECT,
+        properties = {
+            "query" : types.Schema(
+                type=types.Type.STRING,
+                description = "Search query text",
+            ),
+            "num_results": types.Schema(
+                type = types.Type.INTEGER,
+                description = "number of maximum result",
+            ),
         },
     ),
 )
@@ -77,7 +112,8 @@ available_functions = types.Tool(
         schema_get_files_info,
         schema_get_file_content,
         schema_run_python_file,
-        schema_write_file
+        schema_write_file,
+        schema_search_web
 
 
     ]
@@ -87,16 +123,16 @@ available_functions = types.Tool(
 def call_function(function_call_part, verbose=False):
     if verbose:
         print(f"Calling function: {function_call_part.name}({function_call_part.args})")
-    print(f" - Calling function: {function_call_part.name}")
+    
 
     dict_map ={
         "get_files_info" : get_files_info,
         'get_file_content': get_file_content,
         'run_python_file': run_python_file,
-        'write_file': write_file
+        'write_file': write_file,
+        'web_search': web_search
     }
 
-    function_call_part.args["working_directory"] = "./calculator"
     result = dict_map[function_call_part.name](**function_call_part.args)
     if not result:
         return types.Content(
